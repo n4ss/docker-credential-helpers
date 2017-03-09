@@ -109,12 +109,21 @@ GError *list(char *label, char *** paths, char *** accts, unsigned int *list_l) 
                                  "label", label,
                                  NULL);
 
+//	GHashTable *attributes;
+//	g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+//	attributes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+
 	service = secret_service_get_sync(SECRET_SERVICE_NONE, NULL, &err);
+        if (err != NULL) {
+            return err;
+        }
+
 	items = secret_service_search_sync(service, NULL, attributes, flags, NULL, &err);
 	int numKeys = g_list_length(items);
 	if (err != NULL) {
 		return err;
 	}
+
 	*paths = (char **) malloc((int)sizeof(char *)*numKeys);
 	*accts = (char **) malloc((int)sizeof(char *)*numKeys);
 	// items now contains our keys from the gnome keyring

@@ -7,7 +7,7 @@ import (
 )
 
 func TestSecretServiceHelper(t *testing.T) {
-	t.Skip("test requires gnome-keyring but travis CI doesn't have it")
+	//	t.Skip("test requires gnome-keyring but travis CI doesn't have it")
 
 	creds := &credentials.Credentials{
 		Label:     credentials.CredsLabel,
@@ -17,6 +17,11 @@ func TestSecretServiceHelper(t *testing.T) {
 	}
 
 	helper := Secretservice{}
+	old_auths, err := helper.List()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	if err := helper.Add(creds); err != nil {
 		t.Fatal(err)
 	}
@@ -34,21 +39,42 @@ func TestSecretServiceHelper(t *testing.T) {
 		t.Fatalf("expected %s, got %s\n", "foobarbaz", secret)
 	}
 
+	new_auths, err := helper.List()
+	if err != nil || (len(new_auths)-len(old_auths) != 1) {
+		t.Fatal(err)
+	}
+
 	if err := helper.Delete(creds.ServerURL); err != nil {
 		t.Fatal(err)
 	}
-	auths, err := helper.List(credentials.CredsLabel)
-	if err != nil || len(auths) == 0 {
+
+	new_auths, err = helper.List()
+	if err != nil || (len(new_auths)-len(old_auths) != 0) {
 		t.Fatal(err)
 	}
+
 	helper.Add(creds)
-	if newauths, err := helper.List(credentials.CredsLabel); (len(newauths) - len(auths)) != 1 {
+
+	username, secret, err = helper.Get(creds.ServerURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if username != "foobar" {
+		t.Fatalf("expected %s, got %s\n", "foobar", username)
+	}
+
+	if secret != "foobarbaz" {
+		t.Fatalf("expected %s, got %s\n", "foobarbaz", secret)
+	}
+
+	if new_auths, err := helper.List(); (len(new_auths) - len(old_auths)) != 1 {
 		t.Fatal(err)
 	}
 }
 
 func TestMissingCredentials(t *testing.T) {
-	t.Skip("test requires gnome-keyring but travis CI doesn't have it")
+	//t.Skip("test requires gnome-keyring but travis CI doesn't have it")
 
 	helper := Secretservice{}
 	_, _, err := helper.Get("https://adsfasdf.wrewerwer.com/asdfsdddd")
