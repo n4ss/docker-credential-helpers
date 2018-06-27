@@ -17,7 +17,7 @@ func (h Wincred) Add(creds *credentials.Credentials) error {
 	g.UserName = creds.Username
 	g.CredentialBlob = []byte(creds.Secret)
 	g.Persist = winc.PersistLocalMachine
-	g.Attributes = []winc.CredentialAttribute{{"label", []byte(credentials.CredsLabel)}}
+	g.Attributes = []winc.CredentialAttribute{{Keyword: "label", Value: credsLabels}}
 
 	return g.Write()
 }
